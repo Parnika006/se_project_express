@@ -37,7 +37,8 @@ Item.findById(itemId)
   if(String(item.owner) !== req.user._id) {
     return res.status(forbidden).send({message: "forbidden"});
   }
-  return Item.deleteOne().then(() => res.status(200).send({message: "Successfuly Deleted"}));
+  return Item.deleteOne().then(() => res.status(200).send({message: "Successfuly Deleted"}))
+  .catch((err) => {errorHandling(err, res)});
 })
 };
 

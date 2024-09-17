@@ -7,7 +7,7 @@ const forbidden = 403;
 
  const errorHandling = (err, res) => {
     console.error(err);
-    if (err.code === 11000 || err.code === 409) {
+    if (err.code === 11000) {
       return res.status(duplicateError).send({ message: err.message });
     }
     if (err.name === "CastError") {
@@ -19,7 +19,7 @@ const forbidden = 403;
     if (err.name === "DocumentNotFoundError") {
       return res.status(documentNotFound).send({ message: err.message });
     }
-    if (err.name === "AuthenticationError" || err.message === "Incorrect email or password") {
+    if (err.message === "Incorrect email or password") {
       return res.status(authenticationError).send({ message: err.message });
     }
     return res
