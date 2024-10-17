@@ -50,8 +50,8 @@ const likeItem = (req, res) => {
     { new: true }
   )
     .orFail()
-    .then(() => {
-      res.status(201).send({ message: "item liked" });
+    .then((item) => {
+      res.status(201).send(item);
     })
     .catch((err) => {
       errorHandling(err, res);
@@ -65,8 +65,8 @@ const dislikeItem = (req, res) => {
     { new: true }
   )
     .orFail()
-    .then(() => {
-      res.send({ message: "item disliked" });
+    .then((item) => {
+      res.send(item);
     })
     .catch((err) => {
       errorHandling(err, res);
