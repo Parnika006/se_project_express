@@ -1,47 +1,49 @@
 const Item = require("../models/clothingItem");
 
+// const { errorHandling } = require("../utils/errors");
 
-const {errorHandling, forbidden} = require("../utils/errors");
- 
+const ForbiddenError = require("../errors/forbidden-error");
+const DuplicateError = require("../errors/conflict-err");
 
-const getItems = (req, res) => {
- Item.find({})
+const getItems = (req, res, next) => {
+  Item.find({})
     .then((items) => {
       res.send(items);
     })
-    .catch((err) => {
-      errorHandling(err, res);
-    });
+    .catch(next);
 };
 
-const createItem = (req, res) => {
-  
+const createItem = (req, res, next) => {
   const { name, weather, imageUrl } = req.body;
   const owner = req.user._id;
 
   // Object.keys(req).forEach((prop) => console.log(prop));
 
- 
   Item.create({ name, weather, imageUrl, owner })
-    .then((item) => {res.status(201).send(item)})
-    .catch((err) => {errorHandling(err, res)});
+    .then((item) => {
+      res.status(201).send(item);
+    })
+    // .catch((err) => {errorHandling(err, res)});
+    .catch(next);
 };
 
-const deleteItem = (req, res) => {
+const deleteItem = (req, res, next) => {
   const { itemId } = req.params;
-Item.findById(itemId)
-.orFail()
-.then((item) => {
-  if(String(item.owner) !== req.user._id) {
-    return res.status(forbidden).send({message: "forbidden"});
-  }
-  return Item.deleteOne().then(() => res.status(200).send({message: "Successfuly Deleted"}))
-})
-.catch((err) => {errorHandling(err, res)});
+  Item.findById(itemId)
+    .orFail()
+    .then((item) => {
+      if (String(item.owner) !== req.user._id) {
+        //  return res.status(forbidden).send({ message: "forbidden" });
+        throw new ForbiddenError("Forbidden");
+      }
+      return Item.deleteOne().then(() =>
+        res.status(200).send({ message: "Successfuly Deleted" })
+      );
+    })
+    .catch(next);
 };
 
-
-const likeItem = (req, res) => {
+const likeItem = (req, res, next) => {
   // console.log("in like item method");
   // Object.keys(req).forEach((prop) => console.log(prop));
   Item.findByIdAndUpdate(
@@ -53,12 +55,10 @@ const likeItem = (req, res) => {
     .then((item) => {
       res.status(201).send(item);
     })
-    .catch((err) => {
-      errorHandling(err, res);
-    });
+    .catch(next);
 };
 
-const dislikeItem = (req, res) => {
+const dislikeItem = (req, res, next) => {
   Item.findByIdAndUpdate(
     req.params.itemId,
     { $pull: { likes: req.user._id } },
@@ -68,9 +68,7 @@ const dislikeItem = (req, res) => {
     .then((item) => {
       res.send(item);
     })
-    .catch((err) => {
-      errorHandling(err, res);
-    });
+    .catch(next);
 };
 
 module.exports = { getItems, createItem, deleteItem, likeItem, dislikeItem };
