@@ -16,11 +16,12 @@ const getItems = (req, res, next) => {
 const createItem = (req, res, next) => {
   const { name, weather, imageUrl } = req.body;
   const owner = req.user._id;
-
+  console.log(req.body);
   // Object.keys(req).forEach((prop) => console.log(prop));
 
   Item.create({ name, weather, imageUrl, owner })
     .then((item) => {
+      console.log(item);
       res.status(201).send(item);
     })
     // .catch((err) => {errorHandling(err, res)});
