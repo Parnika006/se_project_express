@@ -8,6 +8,9 @@ const { JWT_SECRET } = require("../utils/config");
 
 const BadRequestError = require("../errors/bad-request-err");
 const AuthenticationError = require("../errors/authentication-err");
+const ConflictError = require("../errors/conflict-err");
+const ForbiddenError = require("../errors/forbidden-error");
+const DocumentNotFoundError = require("../errors/not-found-err");
 
 const createUser = (req, res, next) => {
   const { name, avatar, email, password } = req.body;
@@ -47,9 +50,17 @@ const login = (req, res, next) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
       });
-      return res.send({ token, user });
+      return res.send({ token });
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.code === "11000") {
+        next(new ConflictError("The id string is in an invalid format"));
+      } else if (err.code === DocumentNotFoundError) {
+        next(new ForbiddenError("The id string is in an invalid format"));
+      } else {
+        next(err);
+      }
+    });
 };
 
 const getCurrentUser = (req, res, next) => {
@@ -59,7 +70,13 @@ const getCurrentUser = (req, res, next) => {
     .then((user) => {
       res.send(user);
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.code === DocumentNotFoundError) {
+        next(new DocumentNotFoundError("Not Found"));
+      } else {
+        next(err);
+      }
+    });
 };
 
 const updateProfile = (req, res, next) => {
@@ -78,7 +95,15 @@ const updateProfile = (req, res, next) => {
         avatar: user.avatar,
       });
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.code === ForbiddenError) {
+        next(new ForbiddenError("The id string is in an invalid format"));
+      } else if (err.code === DocumentNotFoundError) {
+        next(new DocumentNotFoundError("Not Found"));
+      } else {
+        next(err);
+      }
+    });
 };
 
 module.exports = {

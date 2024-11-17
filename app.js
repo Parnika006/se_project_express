@@ -3,10 +3,12 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config();
 const { errors } = require("celebrate");
+const helmet = require("helmet");
 const mainRouter = require("./routes/index");
 const { login, createUser } = require("./controllers/users");
 const errorHandler = require("./middlewares/error-handler");
 const { requestLogger, errorLogger } = require("./middlewares/logger");
+const limiter = require("./utils/rateLimiter");
 
 const {
   validateLoggingIn,
@@ -23,6 +25,9 @@ mongoose
     console.log("connected to DB");
   })
   .catch(console.error);
+
+app.use(limiter);
+app.use(helmet());
 
 app.use(express.json());
 app.use(cors());

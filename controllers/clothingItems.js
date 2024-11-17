@@ -3,7 +3,10 @@ const Item = require("../models/clothingItem");
 // const { errorHandling } = require("../utils/errors");
 
 const ForbiddenError = require("../errors/forbidden-error");
-const DuplicateError = require("../errors/conflict-err");
+
+const BadRequestError = require("../errors/bad-request-err");
+const DocumentNotFoundError = require("../errors/not-found-err");
+const ConflictError = require("../errors/conflict-err");
 
 const getItems = (req, res, next) => {
   Item.find({})
@@ -25,7 +28,13 @@ const createItem = (req, res, next) => {
       res.status(201).send(item);
     })
     // .catch((err) => {errorHandling(err, res)});
-    .catch(next);
+    .catch((err) => {
+      if (err.code === ConflictError) {
+        next(new ConflictError("The id string is in an invalid format"));
+      } else {
+        next(err);
+      }
+    });
 };
 
 const deleteItem = (req, res, next) => {
@@ -35,13 +44,20 @@ const deleteItem = (req, res, next) => {
     .then((item) => {
       if (String(item.owner) !== req.user._id) {
         //  return res.status(forbidden).send({ message: "forbidden" });
-        throw new ForbiddenError("Forbidden");
+        throw new ForbiddenError(
+          "You do not have permission to delete this item"
+        );
       }
-      return Item.deleteOne().then(() =>
-        res.status(200).send({ message: "Successfuly Deleted" })
-      );
+      return item.deleteOne();
     })
-    .catch(next);
+    .then(() => res.status(200).send({ message: "Successfuly Deleted" }))
+    .catch((err) => {
+      if (err.code === DocumentNotFoundError) {
+        next(new BadRequestError("The id string is in an invalid format"));
+      } else {
+        next(err);
+      }
+    });
 };
 
 const likeItem = (req, res, next) => {
@@ -56,7 +72,13 @@ const likeItem = (req, res, next) => {
     .then((item) => {
       res.status(201).send(item);
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.code === DocumentNotFoundError) {
+        next(new BadRequestError("The id string is in an invalid format"));
+      } else {
+        next(err);
+      }
+    });
 };
 
 const dislikeItem = (req, res, next) => {
@@ -69,7 +91,13 @@ const dislikeItem = (req, res, next) => {
     .then((item) => {
       res.send(item);
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.code === DocumentNotFoundError) {
+        next(new BadRequestError("The id string is in an invalid format"));
+      } else {
+        next(err);
+      }
+    });
 };
 
 module.exports = { getItems, createItem, deleteItem, likeItem, dislikeItem };
