@@ -78,9 +78,7 @@ module.exports.validateLoggingIn = celebrate({
 });
 
 module.exports.validateIDs = celebrate({
-  params: Joi.object()
-    .keys({
-      postId: Joi.string().alphanum().length(24),
-    })
-    .unknown(true),
+  params: Joi.object().keys({
+    itemId: Joi.string().alphanum().length(24),
+  }),
 });

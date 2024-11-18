@@ -7,6 +7,7 @@ const ForbiddenError = require("../errors/forbidden-error");
 const BadRequestError = require("../errors/bad-request-err");
 const DocumentNotFoundError = require("../errors/not-found-err");
 const ConflictError = require("../errors/conflict-err");
+const NotFoundError = require("../errors/not-found-err");
 
 const getItems = (req, res, next) => {
   Item.find({})
@@ -29,8 +30,8 @@ const createItem = (req, res, next) => {
     })
     // .catch((err) => {errorHandling(err, res)});
     .catch((err) => {
-      if (err.code === ConflictError) {
-        next(new ConflictError("The id string is in an invalid format"));
+      if (err.name === "ValidationError") {
+        next(new BadRequestError("The id string is in an invalid format"));
       } else {
         next(err);
       }
@@ -52,8 +53,8 @@ const deleteItem = (req, res, next) => {
     })
     .then(() => res.status(200).send({ message: "Successfuly Deleted" }))
     .catch((err) => {
-      if (err.code === DocumentNotFoundError) {
-        next(new BadRequestError("The id string is in an invalid format"));
+      if (err.name === "DocumentNotFoundError") {
+        next(new NotFoundError("The id string is in an invalid format"));
       } else {
         next(err);
       }
@@ -73,8 +74,8 @@ const likeItem = (req, res, next) => {
       res.status(201).send(item);
     })
     .catch((err) => {
-      if (err.code === DocumentNotFoundError) {
-        next(new BadRequestError("The id string is in an invalid format"));
+      if (err.name === "DocumentNotFoundError") {
+        next(new NotFoundError("The id string is in an invalid format"));
       } else {
         next(err);
       }
@@ -92,8 +93,8 @@ const dislikeItem = (req, res, next) => {
       res.send(item);
     })
     .catch((err) => {
-      if (err.code === DocumentNotFoundError) {
-        next(new BadRequestError("The id string is in an invalid format"));
+      if (err.name === "DocumentNotFoundError") {
+        next(new NotFoundError("The id string is in an invalid format"));
       } else {
         next(err);
       }
