@@ -34,11 +34,11 @@ app.use(cors());
 
 app.use(requestLogger); // before the routes
 
-app.get("/crash-test", () => {
+/* app.get("/crash-test", () => {
   setTimeout(() => {
     throw new Error("Server will crash now");
   }, 0);
-});
+}); */ // had to be removed after code review
 
 app.post("/signin", validateLoggingIn, login);
 app.post("/signup", validateUserInfo, createUser);
